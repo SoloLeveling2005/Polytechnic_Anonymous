@@ -22,6 +22,52 @@ def main_menu_assistant(message):
                      parse_mode='HTML', reply_markup=markup)
 
 
+def message_processing(message):
+    user_id = message.chat.id
+    user_message = message.text
+    with sql.connect('todo.db') as con:
+        cur = con.cursor()
+        cur.execute(f"""
+                      SELECT * FROM connections WHERE first = {user_id};
+                      """)
+        request_user1 = cur.fetchall()
+        cur = con.cursor()
+        cur.execute(f"""
+                                  SELECT * FROM connections WHERE second = {user_id};
+                                  """)
+        request_user2 = cur.fetchall()
+        # print("request_user ",request_user)
+
+        if request_user1 is not []:
+            try:
+                print("request_user1 ", request_user1)
+                you = user_id
+                if you == request_user1[0][1]:
+                    your_partner = request_user1[0][2]
+                else:
+                    your_partner = request_user1[0][1]
+                print("username:", message.from_user.username, "\n", "message", message.text, "\n", "id_user:",
+                      user_id)
+                bot.send_message(your_partner,
+                                 user_message)
+            except:
+                try:
+                    print("request_user2 ", request_user2)
+                    you = user_id
+                    if you == request_user2[0][1]:
+                        your_partner = request_user2[0][2]
+                    else:
+                        your_partner = request_user2[0][1]
+                    print("username:", message.from_user.username, "\n", "message", message.text, "\n", "id_user:",
+                          user_id)
+                    bot.send_message(your_partner,
+                                     user_message)
+                except:
+                    pass
+
+
+
+
 def insert_user_into_db_request_thread(message):
     applications_thread = threading.Thread(target=insert_user_into_db_request, args=(message,))
     applications_thread.daemon = True
